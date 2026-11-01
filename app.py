@@ -50,19 +50,29 @@ def get_all_user_playlists(sp):
 
     return playlists
 
-def find_playlist_by_name(playlists, name):
+def is_owned(playlist, user_id):
+    return playlist["owner"]["id"] == user_id
+
+def find_playlist_by_name(playlists, name, user_id):
     matches = [playlist for playlist in playlists if playlist["name"] == name]
 
     if not matches:
         raise RuntimeError(f"Source playlist not found: {name}")
 
-    if len(matches) > 1:
+    # prefer own playlists; followed ones (e.g. Spotify-generated) are the fallback
+    owned_matches = [playlist for playlist in matches if is_owned(playlist, user_id)]
+    candidates = owned_matches or matches
+
+    if len(candidates) > 1:
         raise RuntimeError(f"Multiple playlists with the same name found: {name}")
 
-    return matches[0]
+    return candidates[0]
 
-def playlist_exists(playlists, name):
-    return any(playlist["name"] == name for playlist in playlists)
+def playlist_exists(playlists, name, user_id):
+    return any(
+        playlist["name"] == name and is_owned(playlist, user_id)
+        for playlist in playlists
+    )
 
 def describe_track(track):
     artists = ", ".join(artist["name"] for artist in track.get("artists") or [] if artist.get("name"))
@@ -154,7 +164,7 @@ def archive_playlist(job_config):
     user_id = sp.current_user()["id"]
 
     playlists = get_all_user_playlists(sp)
-    source_playlist = find_playlist_by_name(playlists, source_name)
+    source_playlist = find_playlist_by_name(playlists, source_name, user_id)
 
     track_uris, local_tracks = get_track_uris(sp, source_playlist["id"])
 
@@ -167,7 +177,7 @@ def archive_playlist(job_config):
         track_count=len(track_uris)
     )
 
-    if playlist_exists(playlists, target_name):
+    if playlist_exists(playlists, target_name, user_id):
         print(f"Archive playlist already exists: {target_name}")
         return
 
