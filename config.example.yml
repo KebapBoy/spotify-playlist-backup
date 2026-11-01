@@ -1,4 +1,6 @@
-# Configuration file for the Spotify Playlist Archiver
+# Example configuration for the Spotify Playlist Archiver.
+# Copy this file to config.yml in the data directory (mounted to /data in the
+# container) and adjust it to your playlists.
 #
 # This file defines which playlists should be backed up, how often,
 # and how the resulting archive playlists should be named.
@@ -76,7 +78,7 @@
 # - Spotify playlist folders are not supported by the API and must be managed manually.
 
 playlists:
-  - source_name: "Mein Mix der Woche"
+  - source_name: "Discover Weekly"
     schedule: weekly
     day_of_week: mon
     hour: 6

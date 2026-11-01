@@ -12,6 +12,7 @@ from spotipy.oauth2 import SpotifyOAuth
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 TIMEZONE = ZoneInfo(os.environ.get("TZ", "Europe/Berlin"))
+CONFIG_PATH = "/data/config.yml"
 STATUS_PATH = "/data/status.json"
 
 def authenticate_only():
@@ -38,8 +39,11 @@ def spotify_client():
     ))
 
 def load_config():
-    with open("/app/config.yml", "r", encoding="utf-8") as file:
-        return yaml.safe_load(file)
+    try:
+        with open(CONFIG_PATH, "r", encoding="utf-8") as file:
+            return yaml.safe_load(file)
+    except FileNotFoundError:
+        raise RuntimeError(f"Config not found: {CONFIG_PATH}. Copy config.example.yml into the data directory as config.yml.")
 
 def get_all_user_playlists(sp):
     playlists = []

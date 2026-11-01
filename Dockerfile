@@ -7,4 +7,5 @@ RUN pip install --no-cache-dir --user spotipy apscheduler pyyaml
 USER root
 RUN mkdir -p /data && chown -R appuser:appuser /data
 USER appuser
+COPY --chown=appuser:appuser app.py /app/
 CMD ["python", "/app/app.py"]

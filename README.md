@@ -4,7 +4,7 @@ A small containerized service that archives Spotify playlists on a schedule. Pla
 
 ## How it works
 
-1. `config.yml` lists the playlists to archive, each with a schedule (`daily`, `weekly`, `monthly`) and a target name template.
+1. `/data/config.yml` (created from [config.example.yml](config.example.yml)) lists the playlists to archive, each with a schedule (`daily`, `weekly`, `monthly`) and a target name template.
 2. For each entry, an APScheduler cron job:
    - looks up the source playlist by exact name (fails if missing or ambiguous),
    - collects all track URIs (podcast episodes are skipped),
@@ -16,6 +16,8 @@ A small containerized service that archives Spotify playlists on a schedule. Pla
 ## Configuration
 
 ### `config.yml`
+
+Start from [config.example.yml](config.example.yml), which also documents every option. The file has to be named `config.yml` and live in the data directory, which is mounted to `/data` in the container. It is not part of the image or the repository.
 
 ```yaml
 playlists:
@@ -53,13 +55,25 @@ See [.env.example](.env.example).
 ## Setup
 
 1. Create an app at the Spotify developer dashboard and register the redirect URI.
-2. `cp .env.example .env` and fill in the values.
-3. Authorize once: set `SPOTIFY_PLAYLIST_BACKUP_AUTH_ONLY=true`, run `docker compose run --rm spotify-playlist-backup`, open the printed URL, and paste the redirected URL back. The token is cached in the `spotify-playlist-backup` volume (`/data/.spotify-token`).
-4. Set `AUTH_ONLY=false` and start with `docker compose up -d`.
+2. `cp .env.example .env`, `mkdir data` and `cp config.example.yml data/config.yml`, then fill in the values and list your playlists. The data directory is mounted to `/data` and holds the config, the cached Spotify token and `status.json`; it must be writable by uid 1000 (`chown 1000:1000 data`).
+3. Authorize once: set `SPOTIFY_PLAYLIST_BACKUP_AUTH_ONLY=true`, run `docker compose run --rm spotify-playlist-backup`, open the printed URL, and paste the redirected URL back. The token is cached in the data directory (`/data/.spotify-token`).
+4. Set `AUTH_ONLY=false` and start with `docker compose up -d --build`.
+
+To use the image from another compose file (e.g. a stack manager), build straight from git and mount your data directory, which contains `config.yml`:
+
+```yaml
+services:
+  spotify-playlist-backup:
+    build: https://github.com/<user>/spotify-playlist-backup.git#main
+    volumes:
+      - /path/to/data:/data
+```
+
+The image contains only `app.py`; configuration and state stay in the data directory.
 
 ## Monitoring
 
-Each archive run writes its result (`ok`, time, error) per playlist to `/data/status.json`. The container healthcheck turns **unhealthy** while the most recent run of any playlist failed and recovers once that playlist succeeds again, so failures show up in Docker/Dockhand. The container restarts automatically (`unless-stopped`). No notifications are sent.
+Each archive run writes its result (`ok`, time, error) per playlist to `status.json` in the data directory. The container healthcheck turns **unhealthy** while the most recent run of any playlist failed and recovers once that playlist succeeds again, so failures show up in Docker/Dockhand. The container restarts automatically (`unless-stopped`). No notifications are sent.
 
 ## Known limitations
 
