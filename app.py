@@ -1,5 +1,6 @@
 import os
 import re
+import traceback
 import yaml
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -186,7 +187,11 @@ def main():
 
     if os.environ.get("RUN_ON_STARTUP", "false").lower() == "true":
         for playlist_config in config.get("playlists", []):
-            archive_playlist(playlist_config)
+            try:
+                archive_playlist(playlist_config)
+            except Exception:
+                print(f"Startup archive failed: {playlist_config.get('source_name')}", flush=True)
+                traceback.print_exc()
 
     scheduler.start()
 

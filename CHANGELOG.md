@@ -8,6 +8,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 ### Fixed
 - `config.yml` comments documented a default `hour` of 8 for daily and weekly jobs; the actual default is 0.
 - Typos ("archieve") in log messages; removed unused `import sys`.
+- A failing playlist during the `RUN_ON_STARTUP` run no longer aborts the remaining playlists or prevents the scheduler from starting; the error is logged with a traceback.
 
 ## [0.1.0] - 2026-11-01
 
@@ -24,6 +25,5 @@ Initial version, migrated unchanged from the Dockhand `spotify` stack.
 - Spotify-generated playlists may be inaccessible via the API.
 - Local files in a playlist likely cause adding tracks to fail.
 - A failed job only logs; container has no restart policy or healthcheck.
-- An exception in the `RUN_ON_STARTUP` loop aborts remaining playlists and the scheduler start.
 - A new copy is created even if the playlist is unchanged; only name collisions are deduplicated.
 - Source lookup includes followed playlists, which can cause ambiguous-name errors.
