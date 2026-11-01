@@ -27,13 +27,13 @@
 # Time configuration (optional, depends on schedule):
 #
 # For daily:
-#   hour (int, default: 8)
+#   hour (int, default: 0)
 #   minute (int, default: 0)
 #
 # For weekly:
 #   day_of_week (string, default: "mon")
 #     Allowed values: mon, tue, wed, thu, fri, sat, sun
-#   hour (int, default: 8)
+#   hour (int, default: 0)
 #   minute (int, default: 0)
 #
 # For monthly:

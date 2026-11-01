@@ -5,6 +5,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Fixed
+- `config.yml` comments documented a default `hour` of 8 for daily and weekly jobs; the actual default is 0.
+
 ## [0.1.0] - 2026-11-01
 
 Initial version, migrated unchanged from the Dockhand `spotify` stack.
@@ -17,7 +20,6 @@ Initial version, migrated unchanged from the Dockhand `spotify` stack.
 - Dockerfile and standalone `compose.yaml`.
 
 ### Known issues
-- Documented `hour` default of 8 in `config.yml` comments differs from the code default of 0.
 - Spotify-generated playlists may be inaccessible via the API.
 - Local files in a playlist likely cause adding tracks to fail.
 - A failed job only logs; container has no restart policy or healthcheck.
