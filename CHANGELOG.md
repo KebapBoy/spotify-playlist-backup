@@ -12,6 +12,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - Each archive run records its result in `/data/status.json`; the container healthcheck reports unhealthy while the last run of any job failed, and healthy again after that job succeeds.
 
 ### Fixed
+- An empty config (`playlists:` without entries, or an empty `config.yml`) crashed the app and sent the container into a restart loop. It now logs that there is nothing to archive and keeps running.
 - `auth.py` failed with `No module named 'spotipy'` when run from a root shell (as some terminals, including Dockhand's, open one). Python packages are now installed system-wide in the image, and `auth.py` drops to the app user (uid 1000) so the token file is owned by the user the app runs as.
 
 ### Changed

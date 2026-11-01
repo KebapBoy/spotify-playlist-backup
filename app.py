@@ -270,21 +270,27 @@ def add_schedule(scheduler, playlist_config):
 def main():
     config = load_config()
 
+    # an empty file or an empty "playlists:" key is read as None
+    playlists = (config or {}).get("playlists") or []
+
     scheduler = BlockingScheduler(timezone=str(TIMEZONE))
 
-    for playlist_config in config.get("playlists", []):
+    for playlist_config in playlists:
         add_schedule(scheduler, playlist_config)
 
     print("Running Spotify Playlist Archiver.")
 
-    for playlist_config in config.get("playlists", []):
+    if not playlists:
+        print(f"No playlists configured in {CONFIG_PATH}; nothing to archive. Add playlists and restart the container.", flush=True)
+
+    for playlist_config in playlists:
         if looks_unsupported(playlist_config["source_name"]):
             print(f"WARNING: \"{playlist_config['source_name']}\" will most likely fail. {UNSUPPORTED_NOTE}", flush=True)
 
     wait_for_token()
 
     if os.environ.get("RUN_ON_STARTUP", "false").lower() == "true":
-        for playlist_config in config.get("playlists", []):
+        for playlist_config in playlists:
             try:
                 run_archive(playlist_config)
             except Exception:
