@@ -55,7 +55,7 @@ See [.env.example](.env.example).
 ## Setup
 
 1. Create an app at the Spotify developer dashboard and register the redirect URI.
-2. `cp .env.example .env`, `mkdir data` and `cp config.example.yml data/config.yml`, then fill in the values and list your playlists. The data directory is mounted to `/data` and holds the config, the cached Spotify token and `status.json`; it must be writable by uid 1000 (`chown 1000:1000 data`).
+2. `cp .env.example .env`, `mkdir data` and `cp config.example.yml data/config.yml`, then fill in the values and list your playlists. The data directory (`SPOTIFY_PLAYLIST_BACKUP_DATA_DIR`, default `./data`) is mounted to `/data` and holds the config, the cached Spotify token and `status.json`; it must be writable by uid 1000 (`chown 1000:1000 data`).
 3. Authorize once: set `SPOTIFY_PLAYLIST_BACKUP_AUTH_ONLY=true`, run `docker compose run --rm spotify-playlist-backup`, open the printed URL, and paste the redirected URL back. The token is cached in the data directory (`/data/.spotify-token`).
 4. Set `AUTH_ONLY=false` and start with `docker compose up -d --build`.
 
