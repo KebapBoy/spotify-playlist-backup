@@ -1,3 +1,4 @@
+import difflib
 import json
 import os
 import re
@@ -57,7 +58,10 @@ def find_playlist_by_name(playlists, name, user_id):
     matches = [playlist for playlist in playlists if playlist["name"] == name]
 
     if not matches:
-        raise RuntimeError(f"Source playlist not found: {name}")
+        similar = difflib.get_close_matches(name, [playlist["name"] for playlist in playlists], n=5, cutoff=0.4)
+        hint = f" Similar names: {similar}." if similar else ""
+
+        raise RuntimeError(f"Source playlist not found: {name} ({len(playlists)} playlists in library).{hint}")
 
     # prefer own playlists; followed ones (e.g. Spotify-generated) are the fallback
     owned_matches = [playlist for playlist in matches if is_owned(playlist, user_id)]

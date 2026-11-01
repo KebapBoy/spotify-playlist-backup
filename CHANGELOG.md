@@ -9,6 +9,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - Each archive run records its result in `/data/status.json`; the container healthcheck reports unhealthy while the last run of any job failed, and healthy again after that job succeeds.
 
 ### Changed
+- "Source playlist not found" now reports how many playlists the library contains and the closest matching names, to make name typos and missing library entries easy to diagnose.
 - Source playlist lookup prefers playlists you own; followed playlists (e.g. Spotify-generated ones) are used only when no owned playlist has that name. An ambiguity error is raised only within the chosen group.
 - The "archive already exists" check only considers your own playlists, so a followed playlist with the target name no longer causes a run to be skipped.
 - Local files in a source playlist are skipped instead of making the run fail. They are logged as "artist - title" and listed in the archive playlist's description (truncated to Spotify's 300 character limit). `{track_count}` counts only the tracks that were actually archived.
@@ -31,6 +32,6 @@ Initial version, migrated unchanged from the Dockhand `spotify` stack.
 - Dockerfile and standalone `compose.yaml`.
 
 ### Known issues
-- Spotify-generated playlists may be inaccessible via the API.
+- Spotify-generated playlists may be inaccessible via the API. Both startup runs so far (2026-10-30, 2026-10-31) failed with "Source playlist not found: Mein Mix der Woche"; cause still to be determined (name, library membership or API restriction).
 - Local files are not archived (see above). Whether the Web API can add them at all is untested; planned: try adding them separately and fall back to skipping.
 - A new copy is created even if the playlist is unchanged; only name collisions are deduplicated.
