@@ -5,6 +5,12 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Added
+- Each archive run records its result in `/data/status.json`; the container healthcheck reports unhealthy while the last run of any job failed, and healthy again after that job succeeds.
+
+### Changed
+- Restart policy is now `unless-stopped` (was `no`).
+
 ### Fixed
 - `config.yml` comments documented a default `hour` of 8 for daily and weekly jobs; the actual default is 0.
 - Typos ("archieve") in log messages; removed unused `import sys`.
@@ -24,6 +30,5 @@ Initial version, migrated unchanged from the Dockhand `spotify` stack.
 ### Known issues
 - Spotify-generated playlists may be inaccessible via the API.
 - Local files in a playlist likely cause adding tracks to fail.
-- A failed job only logs; container has no restart policy or healthcheck.
 - A new copy is created even if the playlist is unchanged; only name collisions are deduplicated.
 - Source lookup includes followed playlists, which can cause ambiguous-name errors.

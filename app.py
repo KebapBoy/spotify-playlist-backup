@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import traceback
@@ -10,6 +11,7 @@ from spotipy.oauth2 import SpotifyOAuth
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 TIMEZONE = ZoneInfo(os.environ.get("TZ", "Europe/Berlin"))
+STATUS_PATH = "/data/status.json"
 
 def authenticate_only():
     print("Starting Spotify authorization flow...", flush=True)
@@ -95,6 +97,33 @@ def render_name(template, source_name, track_count):
         .replace("{track_count}", str(track_count))
     )
 
+def record_status(source_name, ok, error=None):
+    try:
+        with open(STATUS_PATH, "r", encoding="utf-8") as file:
+            status = json.load(file)
+    except (OSError, ValueError):
+        status = {}
+
+    status[source_name] = {
+        "ok": ok,
+        "time": datetime.now(TIMEZONE).isoformat(timespec="seconds"),
+        "error": error,
+    }
+
+    with open(STATUS_PATH, "w", encoding="utf-8") as file:
+        json.dump(status, file, indent=2)
+
+def run_archive(job_config):
+    source_name = job_config["source_name"]
+
+    try:
+        archive_playlist(job_config)
+    except Exception as error:
+        record_status(source_name, False, str(error))
+        raise
+
+    record_status(source_name, True)
+
 def archive_playlist(job_config):
     source_name = job_config["source_name"]
     target_template = job_config["target_name"]
@@ -140,7 +169,7 @@ def add_schedule(scheduler, playlist_config):
     schedule = playlist_config["schedule"]
 
     common_args = {
-        "func": archive_playlist,
+        "func": run_archive,
         "args": [playlist_config],
         "id": f"backup_{playlist_config['source_name']}",
         "replace_existing": True,
@@ -188,7 +217,7 @@ def main():
     if os.environ.get("RUN_ON_STARTUP", "false").lower() == "true":
         for playlist_config in config.get("playlists", []):
             try:
-                archive_playlist(playlist_config)
+                run_archive(playlist_config)
             except Exception:
                 print(f"Startup archive failed: {playlist_config.get('source_name')}", flush=True)
                 traceback.print_exc()

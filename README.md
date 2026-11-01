@@ -57,6 +57,10 @@ See [.env.example](.env.example).
 3. Authorize once: set `SPOTIFY_PLAYLIST_BACKUP_AUTH_ONLY=true`, run `docker compose run --rm spotify-playlist-backup`, open the printed URL, and paste the redirected URL back. The token is cached in the `spotify-playlist-backup` volume (`/data/.spotify-token`).
 4. Set `AUTH_ONLY=false` and start with `docker compose up -d`.
 
+## Monitoring
+
+Each archive run writes its result (`ok`, time, error) per playlist to `/data/status.json`. The container healthcheck turns **unhealthy** while the most recent run of any playlist failed and recovers once that playlist succeeds again, so failures show up in Docker/Dockhand. The container restarts automatically (`unless-stopped`). No notifications are sent.
+
 ## Known limitations
 
 See [CHANGELOG.md](CHANGELOG.md) for the current state. Notably, Spotify-generated playlists (e.g. Release Radar, Discover Weekly) may not be readable through the API for newer Spotify apps.
