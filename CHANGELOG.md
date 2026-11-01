@@ -15,6 +15,8 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - `auth.py` failed with `No module named 'spotipy'` when run from a root shell (as some terminals, including Dockhand's, open one). Python packages are now installed system-wide in the image, and `auth.py` drops to the app user (uid 1000) so the token file is owned by the user the app runs as.
 
 ### Changed
+- Warns at startup when a configured `source_name` looks like a Spotify-generated playlist, which the Spotify API doesn't provide (see README); the "Source playlist not found" error carries the same note.
+- `config.example.yml` uses a collaborative and a followed public playlist as examples and carries a short note about the limitation.
 - Missing Spotify credentials now fail with a message naming the variables to set, instead of a spotipy error about unrelated variable names.
 - Authorization is now a separate script, `auth.py`, run inside the running container (`docker exec -it <container> python /app/auth.py`). Without a token the app logs instructions and waits; once the token exists it continues on its own (startup archive, then scheduler). The healthcheck reports unhealthy until a token exists.
 - The host path of the data directory is configurable via `SPOTIFY_PLAYLIST_BACKUP_DATA_DIR` (default `./data`), so the shipped compose file can be deployed unchanged, e.g. as a git stack.
@@ -24,7 +26,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - The example configuration is now `config.example.yml`; `data/` is git-ignored so personal playlists and tokens are not committed.
 - A missing `/data/config.yml` now fails with a message explaining how to create it.
 - "Source playlist not found" now reports how many playlists the library contains and the closest matching names, to make name typos and missing library entries easy to diagnose.
-- Source playlist lookup prefers playlists you own; followed playlists (e.g. Spotify-generated ones) are used only when no owned playlist has that name. An ambiguity error is raised only within the chosen group.
+- Source playlist lookup prefers playlists you own; followed playlists of other users are used only when no owned playlist has that name. An ambiguity error is raised only within the chosen group.
 - The "archive already exists" check only considers your own playlists, so a followed playlist with the target name no longer causes a run to be skipped.
 - Local files in a source playlist are skipped instead of making the run fail. They are logged as "artist - title" and listed in the archive playlist's description (truncated to Spotify's 300 character limit). `{track_count}` counts only the tracks that were actually archived.
 - Restart policy is now `unless-stopped` (was `no`).
@@ -46,6 +48,6 @@ Initial version, migrated unchanged from the Dockhand `spotify` stack.
 - Dockerfile and standalone `compose.yaml`.
 
 ### Known issues
-- Spotify-generated playlists may be inaccessible via the API. Both startup runs so far (2026-10-30, 2026-10-31) failed with "Source playlist not found: Mein Mix der Woche"; cause still to be determined (name, library membership or API restriction).
+- Spotify-generated playlists are not supported (see README).
 - Local files are not archived (see above). Whether the Web API can add them at all is untested; planned: try adding them separately and fall back to skipping.
 - A new copy is created even if the playlist is unchanged; only name collisions are deduplicated.

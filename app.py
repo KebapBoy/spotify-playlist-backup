@@ -16,6 +16,21 @@ TIMEZONE = ZoneInfo(os.environ.get("TZ", "Europe/Berlin"))
 CONFIG_PATH = "/data/config.yml"
 STATUS_PATH = "/data/status.json"
 
+# Spotify doesn't expose its own generated playlists through the Web API (see README)
+UNSUPPORTED_SOURCES = (
+    "discover weekly", "release radar", "dein mix der woche", "mix der woche",
+    "on repeat", "repeat rewind", "time capsule",
+)
+UNSUPPORTED_NOTE = (
+    "Spotify-generated playlists (Release Radar, Discover Weekly, Daily Mix, ...) "
+    "aren't available through the Spotify API and can't be archived."
+)
+
+def looks_unsupported(name):
+    lowered = name.strip().lower()
+
+    return lowered in UNSUPPORTED_SOURCES or lowered.startswith("daily mix")
+
 def wait_for_token():
     if has_token():
         return
@@ -63,10 +78,11 @@ def find_playlist_by_name(playlists, name, user_id):
     if not matches:
         similar = difflib.get_close_matches(name, [playlist["name"] for playlist in playlists], n=5, cutoff=0.4)
         hint = f" Similar names: {similar}." if similar else ""
+        note = f" {UNSUPPORTED_NOTE}" if looks_unsupported(name) else ""
 
-        raise RuntimeError(f"Source playlist not found: {name} ({len(playlists)} playlists in library).{hint}")
+        raise RuntimeError(f"Source playlist not found: {name} ({len(playlists)} playlists in library).{hint}{note}")
 
-    # prefer own playlists; followed ones (e.g. Spotify-generated) are the fallback
+    # prefer own playlists; playlists of other users that you follow are the fallback
     owned_matches = [playlist for playlist in matches if is_owned(playlist, user_id)]
     candidates = owned_matches or matches
 
@@ -260,6 +276,10 @@ def main():
         add_schedule(scheduler, playlist_config)
 
     print("Running Spotify Playlist Archiver.")
+
+    for playlist_config in config.get("playlists", []):
+        if looks_unsupported(playlist_config["source_name"]):
+            print(f"WARNING: \"{playlist_config['source_name']}\" will most likely fail. {UNSUPPORTED_NOTE}", flush=True)
 
     wait_for_token()
 

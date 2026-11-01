@@ -1,6 +1,9 @@
 # Spotify Playlist Backup
 
-A small containerized service that archives Spotify playlists on a schedule. Playlists like "Mein Mix der Woche" or "Release Radar" change constantly; this keeps dated snapshot copies as private playlists in your own account.
+A small containerized service that archives Spotify playlists on a schedule. It is meant for playlists that change over time without you being in control of them, such as collaborative playlists or public playlists of other users that you follow: it keeps dated copies as private playlists in your own account.
+
+> [!WARNING]
+> **Spotify-generated playlists do not work.** Release Radar, Discover Weekly ("Dein Mix der Woche"), Daily Mix, On Repeat, Repeat Rewind, Time Capsule and similar playlists can't be read through the Spotify Web API, so they can't be used as a source. Spotify withholds them from apps in development mode and from apps registered since 2024-11-27 ([announcement](https://developer.spotify.com/blog/2024-11-27-changes-to-the-web-api)).
 
 ## How it works
 
@@ -21,7 +24,7 @@ Start from [config.example.yml](config.example.yml), which also documents every 
 
 ```yaml
 playlists:
-  - source_name: "Mein Mix der Woche"
+  - source_name: "Friends Road Trip"
     schedule: weekly
     day_of_week: mon
     hour: 6
@@ -80,7 +83,7 @@ Each archive run writes its result (`ok`, time, error) per playlist to `status.j
 
 - **Local files** are not copied into the archive. They are logged and listed in the archive playlist's description.
 
-See [CHANGELOG.md](CHANGELOG.md) for the current state. Notably, Spotify-generated playlists (e.g. Release Radar, Discover Weekly) may not be readable through the API for newer Spotify apps.
+See [CHANGELOG.md](CHANGELOG.md) for the current state.
 
 ## License
 

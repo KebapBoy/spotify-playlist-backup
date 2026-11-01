@@ -2,8 +2,9 @@
 # Copy this file to config.yml in the data directory (mounted to /data in the
 # container) and adjust it to your playlists.
 #
-# This file defines which playlists should be backed up, how often,
-# and how the resulting archive playlists should be named.
+# NOTE: Spotify-generated playlists (Release Radar, Discover Weekly, Daily Mix, ...)
+# are not available through the Spotify API and can't be used as source_name.
+# Collaborative playlists and public playlists of other users that you follow work.
 #
 # Structure:
 #
@@ -64,7 +65,7 @@
 # Example:
 #
 # playlists:
-#   - source_name: "Discover Weekly"
+#   - source_name: "Friends Road Trip"
 #     schedule: weekly
 #     day_of_week: mon
 #     hour: 8
@@ -74,20 +75,23 @@
 # Notes:
 #
 # - The archive playlist is only created if it does not already exist.
-# - Playlist names must be unique, otherwise the backup is skipped.
+# - source_name has to be unique among your own playlists. Playlists of other
+#   users that you follow are only used if you have no playlist with that name.
 # - Spotify playlist folders are not supported by the API and must be managed manually.
 
 playlists:
-  - source_name: "Discover Weekly"
+  # collaborative playlist
+  - source_name: "Friends Road Trip"
     schedule: weekly
     day_of_week: mon
     hour: 6
     minute: 0
     target_name: "{date:%d.%m.%y} - {source_name}"
 
-  - source_name: "Release Radar"
-    schedule: weekly
-    day_of_week: fri
+  # public playlist of another user that you follow
+  - source_name: "Indie Finds"
+    schedule: monthly
+    day: 1
     hour: 6
     minute: 0
-    target_name: "{date:%Y-%m-%d} - {source_name}"
+    target_name: "{date:%Y-%m} - {source_name}"
