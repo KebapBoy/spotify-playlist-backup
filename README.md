@@ -63,6 +63,8 @@ Each archive run writes its result (`ok`, time, error) per playlist to `/data/st
 
 ## Known limitations
 
+- **Local files** are not copied into the archive. They are logged and listed in the archive playlist's description.
+
 See [CHANGELOG.md](CHANGELOG.md) for the current state. Notably, Spotify-generated playlists (e.g. Release Radar, Discover Weekly) may not be readable through the API for newer Spotify apps.
 
 ## License

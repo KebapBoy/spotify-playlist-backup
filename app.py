@@ -64,23 +64,43 @@ def find_playlist_by_name(playlists, name):
 def playlist_exists(playlists, name):
     return any(playlist["name"] == name for playlist in playlists)
 
+def describe_track(track):
+    artists = ", ".join(artist["name"] for artist in track.get("artists") or [] if artist.get("name"))
+    name = track.get("name") or "Unknown title"
+
+    return f"{artists} - {name}" if artists else name
+
 def get_track_uris(sp, playlist_id):
     uris = []
+    local_tracks = []
     result = sp.playlist_items(
         playlist_id,
         additional_types=("track",),
-        fields="items(track(uri,type)),next"
+        fields="items(track(uri,type,name,artists(name))),next"
     )
 
     while result:
         for item in result["items"]:
             track = item.get("track")
             if track and track.get("uri") and track.get("type") == "track":
-                uris.append(track["uri"])
+                # local files can't be added to playlists through the Web API
+                if track["uri"].startswith("spotify:local:"):
+                    local_tracks.append(describe_track(track))
+                else:
+                    uris.append(track["uri"])
 
         result = sp.next(result) if result["next"] else None
 
-    return uris
+    return uris, local_tracks
+
+def render_local_tracks_description(local_tracks):
+    description = f"Skipped {len(local_tracks)} local file(s): " + "; ".join(local_tracks)
+
+    # Spotify limits playlist descriptions to 300 characters
+    if len(description) > 300:
+        description = description[:299] + "…"
+
+    return description
 
 def render_name(template, source_name, track_count):
     now = datetime.now(TIMEZONE)
@@ -136,7 +156,7 @@ def archive_playlist(job_config):
     playlists = get_all_user_playlists(sp)
     source_playlist = find_playlist_by_name(playlists, source_name)
 
-    track_uris = get_track_uris(sp, source_playlist["id"])
+    track_uris, local_tracks = get_track_uris(sp, source_playlist["id"])
 
     if not track_uris:
         raise RuntimeError(f"Source playlist doesn't contain any tracks: {source_name}")
@@ -161,6 +181,16 @@ def archive_playlist(job_config):
         sp.playlist_add_items(
             archive_playlist_result["id"],
             track_uris[i:i + 100]
+        )
+
+    if local_tracks:
+        print(f"Skipped {len(local_tracks)} local file(s) in {source_name}:")
+        for local_track in local_tracks:
+            print(f"  {local_track}")
+
+        sp.playlist_change_details(
+            archive_playlist_result["id"],
+            description=render_local_tracks_description(local_tracks)
         )
 
     print(f"Archived playlist: {target_name}, Tracks: {len(track_uris)}")
