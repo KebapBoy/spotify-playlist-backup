@@ -1,4 +1,3 @@
-import sys
 import os
 import re
 import yaml
@@ -99,7 +98,7 @@ def archive_playlist(job_config):
     source_name = job_config["source_name"]
     target_template = job_config["target_name"]
 
-    print(f"Start archieving playlist: {source_name}")
+    print(f"Start archiving playlist: {source_name}")
 
     sp = spotify_client()
     user_id = sp.current_user()["id"]
@@ -119,7 +118,7 @@ def archive_playlist(job_config):
     )
 
     if playlist_exists(playlists, target_name):
-        print(f"Archieve playlist already exists: {target_name}")
+        print(f"Archive playlist already exists: {target_name}")
         return
 
     archive_playlist_result = sp.user_playlist_create(
@@ -134,7 +133,7 @@ def archive_playlist(job_config):
             track_uris[i:i + 100]
         )
 
-    print(f"Archieved playlist: {target_name}, Tracks: {len(track_uris)}")
+    print(f"Archived playlist: {target_name}, Tracks: {len(track_uris)}")
 
 def add_schedule(scheduler, playlist_config):
     schedule = playlist_config["schedule"]

@@ -7,6 +7,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ### Fixed
 - `config.yml` comments documented a default `hour` of 8 for daily and weekly jobs; the actual default is 0.
+- Typos ("archieve") in log messages; removed unused `import sys`.
 
 ## [0.1.0] - 2026-11-01
 
@@ -26,4 +27,3 @@ Initial version, migrated unchanged from the Dockhand `spotify` stack.
 - An exception in the `RUN_ON_STARTUP` loop aborts remaining playlists and the scheduler start.
 - A new copy is created even if the playlist is unchanged; only name collisions are deduplicated.
 - Source lookup includes followed playlists, which can cause ambiguous-name errors.
-- Typos ("archieve") in log messages; unused `import sys`.
