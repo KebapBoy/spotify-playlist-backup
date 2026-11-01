@@ -3,22 +3,6 @@ services:
     build: .
     image: spotify-playlist-backup:latest
     restart: unless-stopped
-    healthcheck:
-      # unhealthy while the last run of any job failed (see /data/status.json)
-      test:
-        - CMD
-        - python
-        - -c
-        - |
-          import json, sys
-          try:
-              status = json.load(open("/data/status.json"))
-          except (OSError, ValueError):
-              sys.exit(0)
-          sys.exit(0 if all(job["ok"] for job in status.values()) else 1)
-      interval: 5m
-      timeout: 10s
-      retries: 1
     environment:
       TZ: ${TZ}
       SPOTIFY_CLIENT_ID: ${SPOTIFY_PLAYLIST_BACKUP_CLIENT_ID}

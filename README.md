@@ -73,7 +73,7 @@ The image contains only `app.py`; configuration and state stay in the data direc
 
 ## Monitoring
 
-Each archive run writes its result (`ok`, time, error) per playlist to `status.json` in the data directory. The container healthcheck turns **unhealthy** while the most recent run of any playlist failed and recovers once that playlist succeeds again, so failures show up in Docker/Dockhand. The container restarts automatically (`unless-stopped`). No notifications are sent.
+Each archive run writes its result (`ok`, time, error) per playlist to `status.json` in the data directory. The container healthcheck (built into the image, see `healthcheck.py`) turns **unhealthy** while the most recent run of any playlist failed and recovers once that playlist succeeds again, so failures show up in Docker/Dockhand. The container restarts automatically (`unless-stopped`). No notifications are sent.
 
 ## Known limitations
 
