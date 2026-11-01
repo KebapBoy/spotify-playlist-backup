@@ -11,6 +11,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 ### Added
 - Each archive run records its result in `/data/status.json`; the container healthcheck reports unhealthy while the last run of any job failed, and healthy again after that job succeeds.
 
+### Fixed
+- `auth.py` failed with `No module named 'spotipy'` when run from a root shell (as some terminals, including Dockhand's, open one). Python packages are now installed system-wide in the image, and `auth.py` drops to the app user (uid 1000) so the token file is owned by the user the app runs as.
+
 ### Changed
 - Missing Spotify credentials now fail with a message naming the variables to set, instead of a spotipy error about unrelated variable names.
 - Authorization is now a separate script, `auth.py`, run inside the running container (`docker exec -it <container> python /app/auth.py`). Without a token the app logs instructions and waits; once the token exists it continues on its own (startup archive, then scheduler). The healthcheck reports unhealthy until a token exists.
