@@ -1,0 +1,33 @@
+services:
+  spotify-playlist-backup:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: "no"
+    healthcheck:
+      disable: true
+    environment:
+      TZ: ${TZ}
+      SPOTIFY_CLIENT_ID: ${SPOTIFY_PLAYLIST_BACKUP_CLIENT_ID}
+      SPOTIFY_CLIENT_SECRET: ${SPOTIFY_PLAYLIST_BACKUP_CLIENT_SECRET}
+      SPOTIFY_REDIRECT_URI: ${SPOTIFY_PLAYLIST_BACKUP_REDIRECT_URI}
+      RUN_ON_STARTUP: ${SPOTIFY_PLAYLIST_BACKUP_RUN_ON_STARTUP:-false}
+      SPOTIFY_AUTH_ONLY: ${SPOTIFY_PLAYLIST_BACKUP_AUTH_ONLY:-false}
+    configs:
+      - source: app
+        target: /app/app.py
+        mode: "0444"
+      - source: config
+        target: /app/config.yml
+        mode: "0444"
+    volumes:
+      - spotify-playlist-backup:/data
+
+volumes:
+  spotify-playlist-backup:
+
+configs:
+  app:
+    file: ./app.py
+  config:
+    file: ./config.yml

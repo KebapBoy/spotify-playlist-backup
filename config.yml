@@ -1,0 +1,91 @@
+# Configuration file for the Spotify Playlist Archiver
+#
+# This file defines which playlists should be backed up, how often,
+# and how the resulting archive playlists should be named.
+#
+# Structure:
+#
+# playlists:
+#   - source_name: "<source playlist name>"
+#     schedule: "<interval>"
+#     ... additional parameters depending on schedule
+#     target_name: "<template for target playlist name>"
+#
+# Fields in detail:
+#
+# source_name (string, required)
+#   Exact name of the Spotify playlist to archive.
+#   Must be unique, otherwise the script will fail.
+#
+# schedule (string, required)
+#   Defines how often the backup should run.
+#   Allowed values:
+#     - daily     → runs every day
+#     - weekly    → runs once per week
+#     - monthly   → runs once per month
+#
+# Time configuration (optional, depends on schedule):
+#
+# For daily:
+#   hour (int, default: 8)
+#   minute (int, default: 0)
+#
+# For weekly:
+#   day_of_week (string, default: "mon")
+#     Allowed values: mon, tue, wed, thu, fri, sat, sun
+#   hour (int, default: 8)
+#   minute (int, default: 0)
+#
+# For monthly:
+#   day (int, default: 1)
+#     Day of month (1–31)
+#   hour (int, default: 0)
+#   minute (int, default: 0)
+#
+# target_name (string, required)
+#   Template for the name of the created archive playlist.
+#   Supports the following placeholders:
+#
+#     {source_name}
+#       → name of the source playlist
+#
+#     {track_count}
+#       → number of tracks at the time of backup
+#
+#     {date:<strftime>}
+#       → formatted date using Python strftime syntax
+#       Examples:
+#         {date:%d.%m.%y}   → 13.05.26
+#         {date:%Y-%m-%d}   → 2026-05-13
+#         {date:%Y-%m}      → 2026-05
+#
+# Example:
+#
+# playlists:
+#   - source_name: "Discover Weekly"
+#     schedule: weekly
+#     day_of_week: mon
+#     hour: 8
+#     minute: 0
+#     target_name: "{date:%d.%m.%y} - {source_name}"
+#
+# Notes:
+#
+# - The archive playlist is only created if it does not already exist.
+# - Playlist names must be unique, otherwise the backup is skipped.
+# - Spotify playlist folders are not supported by the API and must be managed manually.
+
+playlists:
+  - source_name: "Mein Mix der Woche"
+    schedule: weekly
+    day_of_week: mon
+    hour: 6
+    minute: 0
+    target_name: "{date:%d.%m.%y} - {source_name}"
+
+  - source_name: "Release Radar"
+    schedule: weekly
+    day_of_week: fri
+    hour: 6
+    minute: 0
+    target_name: "{date:%Y-%m-%d} - {source_name}"
