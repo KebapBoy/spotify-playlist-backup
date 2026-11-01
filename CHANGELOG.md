@@ -12,6 +12,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - Each archive run records its result in `/data/status.json`; the container healthcheck reports unhealthy while the last run of any job failed, and healthy again after that job succeeds.
 
 ### Changed
+- Missing Spotify credentials now fail with a message naming the variables to set, instead of a spotipy error about unrelated variable names.
 - Authorization is now a separate script, `auth.py`, run inside the running container (`docker exec -it <container> python /app/auth.py`). Without a token the app logs instructions and waits; once the token exists it continues on its own (startup archive, then scheduler). The healthcheck reports unhealthy until a token exists.
 - The host path of the data directory is configurable via `SPOTIFY_PLAYLIST_BACKUP_DATA_DIR` (default `./data`), so the shipped compose file can be deployed unchanged, e.g. as a git stack.
 - The healthcheck now lives in the image (`HEALTHCHECK` in the Dockerfile, script in `healthcheck.py`) instead of the compose file.
