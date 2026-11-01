@@ -9,7 +9,6 @@ services:
       SPOTIFY_CLIENT_SECRET: ${SPOTIFY_PLAYLIST_BACKUP_CLIENT_SECRET}
       SPOTIFY_REDIRECT_URI: ${SPOTIFY_PLAYLIST_BACKUP_REDIRECT_URI}
       RUN_ON_STARTUP: ${SPOTIFY_PLAYLIST_BACKUP_RUN_ON_STARTUP:-false}
-      SPOTIFY_AUTH_ONLY: ${SPOTIFY_PLAYLIST_BACKUP_AUTH_ONLY:-false}
     volumes:
       # holds config.yml, the Spotify token and status.json; must be writable by uid 1000
       - ${SPOTIFY_PLAYLIST_BACKUP_DATA_DIR:-./data}:/data

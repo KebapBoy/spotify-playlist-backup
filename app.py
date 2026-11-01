@@ -2,41 +2,40 @@ import difflib
 import json
 import os
 import re
+import time
 import traceback
 import yaml
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-import spotipy
-from spotipy.oauth2 import SpotifyOAuth
 from apscheduler.schedulers.blocking import BlockingScheduler
+
+from spotify_auth import has_token, spotify_client
 
 TIMEZONE = ZoneInfo(os.environ.get("TZ", "Europe/Berlin"))
 CONFIG_PATH = "/data/config.yml"
 STATUS_PATH = "/data/status.json"
 
-def authenticate_only():
-    print("Starting Spotify authorization flow...", flush=True)
+def wait_for_token():
+    if has_token():
+        return
 
-    sp = spotify_client()
-    user = sp.current_user()
+    waited = 0
 
-    print(f"Authenticated as: {user['display_name']} ({user['id']})", flush=True)
+    while not has_token():
+        if waited % 1800 == 0:
+            print(
+                "No Spotify token found. Authorize once from a terminal in this container:\n"
+                "    docker exec -it <container> python /app/auth.py\n"
+                "(in Dockhand: open the container's terminal and run: python /app/auth.py)\n"
+                "Waiting for the token...",
+                flush=True
+            )
 
-def spotify_client():
-    return spotipy.Spotify(auth_manager=SpotifyOAuth(
-        client_id=os.environ["SPOTIFY_CLIENT_ID"],
-        client_secret=os.environ["SPOTIFY_CLIENT_SECRET"],
-        redirect_uri=os.environ["SPOTIFY_REDIRECT_URI"],
-        scope=(
-            "playlist-read-private "
-            "playlist-read-collaborative "
-            "playlist-modify-private "
-            "playlist-modify-public"
-        ),
-        cache_path="/data/.spotify-token",
-        open_browser=False
-    ))
+        time.sleep(10)
+        waited += 10
+
+    print("Spotify token found, continuing.", flush=True)
 
 def load_config():
     try:
@@ -262,6 +261,8 @@ def main():
 
     print("Running Spotify Playlist Archiver.")
 
+    wait_for_token()
+
     if os.environ.get("RUN_ON_STARTUP", "false").lower() == "true":
         for playlist_config in config.get("playlists", []):
             try:
@@ -273,8 +274,4 @@ def main():
     scheduler.start()
 
 if __name__ == "__main__":
-    if os.environ.get("SPOTIFY_AUTH_ONLY") == "true":
-        authenticate_only()
-        exit(0)
-
     main()

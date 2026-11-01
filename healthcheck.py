@@ -1,7 +1,13 @@
 import json
+import os
 import sys
 
 STATUS_PATH = "/data/status.json"
+TOKEN_PATH = "/data/.spotify-token"
+
+# unhealthy until the one-time authorization (auth.py) has been done
+if not os.path.exists(TOKEN_PATH):
+    sys.exit(1)
 
 # unhealthy while the last run of any job failed
 try:

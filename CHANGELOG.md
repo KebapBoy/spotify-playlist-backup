@@ -5,10 +5,14 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 
 ## [Unreleased]
 
+### Removed
+- The `SPOTIFY_AUTH_ONLY` environment variable and the auth-only mode of `app.py`.
+
 ### Added
 - Each archive run records its result in `/data/status.json`; the container healthcheck reports unhealthy while the last run of any job failed, and healthy again after that job succeeds.
 
 ### Changed
+- Authorization is now a separate script, `auth.py`, run inside the running container (`docker exec -it <container> python /app/auth.py`). Without a token the app logs instructions and waits; once the token exists it continues on its own (startup archive, then scheduler). The healthcheck reports unhealthy until a token exists.
 - The host path of the data directory is configurable via `SPOTIFY_PLAYLIST_BACKUP_DATA_DIR` (default `./data`), so the shipped compose file can be deployed unchanged, e.g. as a git stack.
 - The healthcheck now lives in the image (`HEALTHCHECK` in the Dockerfile, script in `healthcheck.py`) instead of the compose file.
 - `app.py` is now baked into the image (`COPY` in the Dockerfile) instead of being mounted via compose `configs`, so the image can be built straight from a git URL.

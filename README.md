@@ -50,14 +50,15 @@ See [.env.example](.env.example).
 | `SPOTIFY_PLAYLIST_BACKUP_CLIENT_ID` / `_CLIENT_SECRET` | Credentials of your app in the Spotify developer dashboard |
 | `SPOTIFY_PLAYLIST_BACKUP_REDIRECT_URI` | Must match the redirect URI registered for the Spotify app |
 | `SPOTIFY_PLAYLIST_BACKUP_RUN_ON_STARTUP` | Archive all configured playlists once on start |
-| `SPOTIFY_PLAYLIST_BACKUP_AUTH_ONLY` | Only run the login flow, then exit |
 
 ## Setup
 
 1. Create an app at the Spotify developer dashboard and register the redirect URI.
 2. `cp .env.example .env`, `mkdir data` and `cp config.example.yml data/config.yml`, then fill in the values and list your playlists. The data directory (`SPOTIFY_PLAYLIST_BACKUP_DATA_DIR`, default `./data`) is mounted to `/data` and holds the config, the cached Spotify token and `status.json`; it must be writable by uid 1000 (`chown 1000:1000 data`).
-3. Authorize once: set `SPOTIFY_PLAYLIST_BACKUP_AUTH_ONLY=true`, run `docker compose run --rm spotify-playlist-backup`, open the printed URL, and paste the redirected URL back. The token is cached in the data directory (`/data/.spotify-token`).
-4. Set `AUTH_ONLY=false` and start with `docker compose up -d --build`.
+3. Start with `docker compose up -d --build`. Without a Spotify token the container logs how to authorize and waits.
+4. Authorize once from a terminal in the running container: `docker compose exec spotify-playlist-backup python /app/auth.py` (in a stack manager like Dockhand: open the container's terminal and run `python /app/auth.py`). Open the printed URL, approve, and paste the URL you were redirected to (the page itself won't load, that is expected). The token is stored in the data directory (`/data/.spotify-token`).
+
+The container notices the token on its own and continues: it runs the optional startup archive (`RUN_ON_STARTUP`) and starts the scheduler. No restart is needed.
 
 To use the image from another compose file (e.g. a stack manager), build straight from git and mount your data directory, which contains `config.yml`:
 
@@ -69,11 +70,11 @@ services:
       - /path/to/data:/data
 ```
 
-The image contains only `app.py`; configuration and state stay in the data directory.
+The image contains only the application code; configuration and state stay in the data directory.
 
 ## Monitoring
 
-Each archive run writes its result (`ok`, time, error) per playlist to `status.json` in the data directory. The container healthcheck (built into the image, see `healthcheck.py`) turns **unhealthy** while the most recent run of any playlist failed and recovers once that playlist succeeds again, so failures show up in Docker/Dockhand. The container restarts automatically (`unless-stopped`). No notifications are sent.
+Each archive run writes its result (`ok`, time, error) per playlist to `status.json` in the data directory. The container healthcheck (built into the image, see `healthcheck.py`) turns **unhealthy** until the one-time authorization is done and then while the most recent run of any playlist failed and recovers once that playlist succeeds again, so failures show up in Docker/Dockhand. The container restarts automatically (`unless-stopped`). No notifications are sent.
 
 ## Known limitations
 
